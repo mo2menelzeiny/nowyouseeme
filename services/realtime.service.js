@@ -32,7 +32,25 @@ module.exports = {
     /**
      * Events
      */
-    events: {},
+    events: {
+        "realtime.user.heartbeat"(payload) {
+            payload.ts = Date.now();
+            this.logger.info('realtime.user.heartbeat:', payload);
+        },
+        "realtime.user.offline"(payload) {
+            this.logger.info('realtime.user.offline:', payload);
+            if (this._NATSClient) {
+                this._NATSClient.publish('user.' + payload.userId, 'offline')
+            }
+        },
+        "realtime.user.online"(payload) {
+            this.logger.info('realtime.user.online:', payload);
+            if (this._NATSClient) {
+                this._NATSClient.publish('user.' + payload.userId, 'online')
+            }
+        }
+
+    },
 
     /**
      * Methods
@@ -50,6 +68,7 @@ module.exports = {
                 this._NATSClient.on('connect', (nc) => resolve(nc));
             });
         },
+
         /**
          * disconnect service from NATS server
          * @private
@@ -60,6 +79,7 @@ module.exports = {
                 this._NATSClient = undefined;
             }
         },
+
         /**
          * subscribe to NATS load balanced channel using job workers
          * @private
@@ -68,11 +88,11 @@ module.exports = {
             if (this._NATSClient) {
                 this._subscriptionId = this._NATSClient.subscribe('realtime', {queue: 'q1'},
                     (msg) => {
-                        // handle messages here
-                        this.logger.info(msg)
+                        this.broker.emit('realtime.heartbeat', {userId: msg})
                     });
             }
         },
+
         /**
          * unsubscribe from NATS load-balanced channel
          * @private
@@ -96,7 +116,7 @@ module.exports = {
      * Service started lifecycle event handler
      */
     started() {
-        this._connectToNATS().then(() => {
+        return this._connectToNATS().then(() => {
             this._subscribeToNATSQueueGroup()
         });
     },
