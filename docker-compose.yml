@@ -9,7 +9,7 @@ services:
     container_name: nowyouseeme-api
     env_file: docker-compose.env
     environment:
-      SERVICES: api
+      SERVICES: api, authorization
       PORT: 3000
     depends_on:
       - nats
@@ -23,14 +23,30 @@ services:
     networks:
       - internal
 
-  greeter:
+  presence:
     build:
       context: .
     image: nowyouseeme
-    container_name: nowyouseeme-greeter
+    container_name: nowyouseeme-presence
     env_file: docker-compose.env
     environment:
-      SERVICES: greeter
+      SERVICES: presence
+    labels:
+      - "traefik.enable=false"
+    depends_on:
+      - nats
+      - redis
+    networks:
+      - internal
+
+  realtime:
+    build:
+      context: .
+    image: nowyouseeme
+    container_name: nowyouseeme-realtime
+    env_file: docker-compose.env
+    environment:
+      SERVICES: realtime
     labels:
       - "traefik.enable=false"
     depends_on:
