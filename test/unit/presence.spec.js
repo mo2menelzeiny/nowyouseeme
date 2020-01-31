@@ -6,10 +6,9 @@ describe("Test 'presence' service", () => {
     describe("Test 'presence.events.realtime.user.heartbeat'", () => {
 
         it("should set timeout in the user object", () => {
-            const broker = new ServiceBroker({logger: false});
+            const broker = new ServiceBroker({logger: false, cacher: "memory"});
             const service = broker.createService(TestService);
             const payload = {userId: "SOME_ID", timestamp: Date.now()};
-            service.broker.cacher = {set: jest.fn()};
             service.schema.events["realtime.user.heartbeat"].call(service, payload);
             expect(service._timeouts["SOME_ID"]).toBeDefined();
         });
