@@ -2,39 +2,10 @@
 
 const {NatsError, connect, Client} = require('nats');
 
-/**
- * realtime service
- */
 module.exports = {
-
     name: "realtime",
-
-    /**
-     * Service settings
-     */
-    settings: {},
-
-    /**
-     * Service metadata
-     */
-    metadata: {},
-
-    /**
-     * Service dependencies
-     */
-    dependencies: [],
-
-    /**
-     * Actions
-     */
-    actions: {},
-
-    /**
-     * Events
-     */
     events: {
         "realtime.user.heartbeat"(payload) {
-            payload.ts = Date.now();
             this.logger.info('realtime.user.heartbeat:', payload);
         },
         "realtime.user.offline"(payload) {
@@ -51,10 +22,6 @@ module.exports = {
         }
 
     },
-
-    /**
-     * Methods
-     */
     methods: {
         /**
          * connect service to NATS server
@@ -88,7 +55,8 @@ module.exports = {
             if (this._NATSClient) {
                 this._subscriptionId = this._NATSClient.subscribe('realtime', {queue: 'q1'},
                     (msg) => {
-                        this.broker.emit('realtime.heartbeat', {userId: msg})
+                        this.broker.emit('realtime.user.heartbeat',
+                            {userId: msg, timestamp: Date.now()})
                     });
             }
         },
@@ -104,26 +72,11 @@ module.exports = {
             }
         }
     },
-
-    /**
-     * Service created lifecycle event handler
-     */
-    created() {
-
-    },
-
-    /**
-     * Service started lifecycle event handler
-     */
     started() {
         return this._connectToNATS().then(() => {
             this._subscribeToNATSQueueGroup()
         });
     },
-
-    /**
-     * Service stopped lifecycle event handler
-     */
     stopped() {
         this._unsubscribeFromNATSQueueGroup();
         this._disconnectFromNATS()

@@ -8,7 +8,7 @@ describe("Test 'realtime' service", () => {
     describe("Test 'realtime._connectToNATS' method", () => {
 
         it("should return client if NATS online else NatsError'", () => {
-            let broker = new ServiceBroker({logger: false});
+            const broker = new ServiceBroker({logger: false});
             const service = broker.createService(TestService);
             return service._connectToNATS().then((nc) => {
                 expect(nc.connected).toBeTruthy()
@@ -18,7 +18,7 @@ describe("Test 'realtime' service", () => {
     });
 
     describe("Test 'realtime._disconnectFromNATS' method", () => {
-        let broker = new ServiceBroker({logger: false});
+        const broker = new ServiceBroker({logger: false});
         const service = broker.createService(TestService);
 
         it("should disconnect and clear client", () => {
@@ -32,7 +32,7 @@ describe("Test 'realtime' service", () => {
     describe("Test 'realtime._subscribeToNATSQueueGroup' method", () => {
 
         it("should subscribe to NATS realtime channel and update subscription id", () => {
-            let broker = new ServiceBroker({logger: false});
+            const broker = new ServiceBroker({logger: false});
             const service = broker.createService(TestService);
             return service._connectToNATS().then((nc) => {
                 service._subscribeToNATSQueueGroup();

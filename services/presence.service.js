@@ -1,70 +1,31 @@
 "use strict";
 
-/**
- * presence service
- */
 module.exports = {
-
     name: "presence",
-
-    /**
-     * Service settings
-     */
-    settings: {},
-
-    /**
-     * Service metadata
-     */
-    metadata: {},
-
-    /**
-     * Service dependencies
-     */
-    dependencies: [],
-
-    /**
-     * Actions
-     */
-    actions: {},
-
-    /**
-     * Events
-     */
-    events: {
-        "realtime.user.heartbeat"(payload) {
-            if (this.users.hasOwnProperty(payload.userId)) {
-                clearTimeout(this.users[payload.userId])
-            }
-            this.users[payload.userId]['timestamp'] = payload.ts;
-            this.users[payload.userId]['timeout'] = setTimeout(() => {
-                this.broker.emit("realtime.user.offline", payload)
-            }, 14000)
+    actions: {
+        getUserPresence(ctx) {
+            return this._userPresenceById(ctx.params.userId)
         }
     },
-
-    /**
-     * Methods
-     */
-    methods: {},
-
-    /**
-     * Service created lifecycle event handler
-     */
+    events: {
+        "realtime.user.heartbeat"(payload) {
+            const uid = payload.userId;
+            clearTimeout(this._userPresenceById(uid)['timeout']);
+            this._userPresenceById(uid)['timestamp'] = payload.timestamp;
+            this._userPresenceById(uid)['timeout'] = setTimeout(() => {
+                this.broker.emit("realtime.user.offline", payload)
+            }, 10000)
+        }
+    },
+    methods: {
+        _userPresenceById(userId) {
+            if (!this._users.hasOwnProperty(userId)) {
+                this._users[userId] = {};
+            }
+            return this._users[userId]
+        }
+    },
     created() {
-        this.users = [];
-    },
-
-    /**
-     * Service started lifecycle event handler
-     */
-    started() {
-
-    },
-
-    /**
-     * Service stopped lifecycle event handler
-     */
-    stopped() {
-
+        this._users = {};
     }
 };
