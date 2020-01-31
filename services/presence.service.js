@@ -10,9 +10,12 @@ module.exports = {
     events: {
         "realtime.user.heartbeat"(payload) {
             const uid = payload.userId;
-            clearTimeout(this._userPresenceById(uid)['timeout']);
-            this._userPresenceById(uid)['timestamp'] = payload.timestamp;
-            this._userPresenceById(uid)['timeout'] = setTimeout(() => {
+            const user = this._userPresenceById(uid);
+
+            user.timestamp = payload.timestamp;
+
+            clearTimeout(user.timeout);
+            user.timeout = setTimeout(() => {
                 this.broker.emit("realtime.user.offline", payload)
             }, 10000)
         }
