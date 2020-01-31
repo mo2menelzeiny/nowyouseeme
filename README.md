@@ -2,6 +2,10 @@
 
 # nowyouseeme
 
+A naive implementation of LinkedIn's online indicator backend as seen on their blog post
+
+https://engineering.linkedin.com/blog/2018/01/now-you-see-me--now-you-dont--linkedins-real-time-presence-platf
+
 ## NPM scripts
 
 - `npm run dev`: Start development mode (load all services locally with hot-reload & REPL)
