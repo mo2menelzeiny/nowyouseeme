@@ -3,32 +3,35 @@
 module.exports = {
     name: "presence",
     actions: {
-        getUserPresence(ctx) {
-            return this._userPresenceById(ctx.params.userId)
+        getPresenceTimestamp: {
+            params : {
+                userId: {type: "string"}
+            },
+            handler(ctx) {
+                return this._presenceTimestamp(ctx.params.userId);
+            }
         }
     },
     events: {
         "realtime.user.heartbeat"(payload) {
-            const uid = payload.userId;
-            const user = this._userPresenceById(uid);
-
-            user.timestamp = payload.timestamp;
-
-            clearTimeout(user.timeout);
-            user.timeout = setTimeout(() => {
+            const userId = payload.userId;
+            if (!this._timeouts.hasOwnProperty(userId)) {
+                this._timeouts[userId] = {};
+            }
+            clearTimeout(this._timeouts[userId]);
+            this._timeouts[userId] = setTimeout(() => {
                 this.broker.emit("realtime.user.offline", payload)
-            }, 10000)
+            }, 10000);
+
+            return this.broker.cacher.set("presence." + payload.userId, payload.timestamp)
         }
     },
     methods: {
-        _userPresenceById(userId) {
-            if (!this._users.hasOwnProperty(userId)) {
-                this._users[userId] = {};
-            }
-            return this._users[userId]
+        _presenceTimestamp(userId) {
+            return this.broker.cacher.get("presence." + userId)
         }
     },
     created() {
-        this._users = {};
+        this._timeouts = {};
     }
 };

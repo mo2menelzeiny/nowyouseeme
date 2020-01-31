@@ -12,7 +12,8 @@ module.exports = {
 			path: "/api",
 			whitelist: [
 				// Access to any actions in all services under "/api" URL
-				"authorization.generateUserId"
+				"authorization.generateUserId",
+				"presence.getPresenceTimestamp"
 			]
 		}],
 
